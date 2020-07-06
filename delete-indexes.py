@@ -50,7 +50,7 @@ class ES_Cleanup(object):
         self.context = context
 
         self.cfg = {}
-        self.cfg["es_endpoint"] = "search-audience-us1-t47naux7n5bvu3wkapaiz3nzdu.us-east-1.es.amazonaws.com"
+        self.cfg["es_endpoint"] = self.get_parameter("es_endpoint")
         self.cfg["index"] = self.get_parameter("index", ".*")
         self.cfg["skip_index"] = self.get_parameter("skip_index", ".kibana*")
 
@@ -188,21 +188,11 @@ class DeleteDecider(object):
 #     Returns:
 #         None
 #     """
-event = {
-    'account': '123456789012',
-    'region': 'eu-west-1',
-    'detail': {},
-    'detail-type': 'Scheduled Event',
-    'source': 'aws.events',
-    'time': '1970-01-01T00:00:00Z',
-    'id': 'cdc73f9d-aea9-11e3-9d5a-835b769c0d9c',
-    'resources':
-        ['arn:aws:events:us-east-1:123456789012:rule/my-schedule']
-}
+event = {}
 es = ES_Cleanup(event, "")
-decider = DeleteDecider(delete_after=int("7"),
-                        idx_regex="filebeat-7.4.0-*",
-                        idx_format="%Y.%m.%d",
+decider = DeleteDecider(delete_after=int(es.cfg["delete_after"]),
+                        idx_regex=es.cfg["index"],
+                        idx_format=es.cfg["index_format"],
                         skip_idx_regex=es.cfg["skip_index"],
                         today=datetime.date.today())
 
